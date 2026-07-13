@@ -883,159 +883,314 @@ toggle.classList.toggle('active');
 
 <script type="module">
 
-import { createClient } from 
-'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+  
+  
+  const supabase = createClient(
+    'https://cgnrisbkfouozlhrscwz.supabase.co',
+    'sb_publishable_91UP1zXp948ZhuTCkD1wfg_To9kLyxN'
+  );
+  
+  
+  
+  const form = document.getElementById('contact-form');
+  
+  const nomeInput = document.getElementById('nome');
+  const emailInput = document.getElementById('email');
+  const whatsappInput = document.getElementById('whatsapp');
+  
+  const submitBtn = document.getElementById('submit-btn');
+  
+  const feedback = document.getElementById('form-feedback');
+  
+  
+  
+  // MOSTRA ERRO
+  
+  function showError(campo, mensagem){
+  
+      const erro = document.getElementById('error-' + campo);
+  
+      erro.innerHTML = mensagem;
+  
+      document.getElementById(campo)
+      .classList.add('input-error');
+  
+  }
+  
+  
+  
+  // REMOVE ERRO
+  
+  function clearError(campo){
+  
+      document.getElementById('error-' + campo)
+      .innerHTML = '';
+  
+      document.getElementById(campo)
+      .classList.remove('input-error');
+  
+  }
+  
+  
+  
+  
+  // VALIDA NOME
+  
+  function validarNome(nome){
+  
+      if(nome.trim().length < 2){
+  
+          return false;
+  
+      }
+  
+      return true;
+  
+  }
+  
+  
+  
+  
+  // VALIDA EMAIL
+  
+  function validarEmail(email){
 
-
-// CONFIGURAÇÃO SUPABASE CORRIGIDA
-
-const supabase = createClient(
-'https://cgnrisbkfouozlhrscwz.supabase.co',
-'sb_publishable_91UP1zXp948ZhuTCkD1wfg_To9kLyxN'
-);
-
-
-
-const form = document.getElementById('contact-form');
-
-const nomeInput = document.getElementById('nome');
-
-const emailInput = document.getElementById('email');
-
-const whatsappInput = document.getElementById('whatsapp');
-
-const submitBtn = document.getElementById('submit-btn');
-
-const feedback = document.getElementById('form-feedback');
-
-
-
-
-
-function showError(field,message){
-
-document.getElementById('error-'+field).textContent = message;
-
-document.getElementById(field)
-.classList.add('input-error');
-
+if(!email){
+    return false;
 }
 
 
+const regex =
+/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 
-function clearError(field){
+return regex.test(email.trim());
 
-document.getElementById('error-'+field).textContent='';
+}
+  
+  
+  
+  
+ // VALIDA WHATSAPP
 
-document.getElementById(field)
-.classList.remove('input-error');
+function validarWhatsapp(numero){
 
+if(!numero){
+    return false;
 }
 
 
+const regex =
+/^\(\d{2}\) \d{5}-\d{4}$/;
 
 
-
-function maskWhatsapp(value){
-
-let digits=value.replace(/\D/g,'');
-
-digits=digits.substring(0,11);
-
-
-if(!digits) return '';
-
-
-let formatted='(' + digits.substring(0,2);
-
-
-if(digits.length>=2){
-
-formatted+=') ';
-
+if(!regex.test(numero)){
+    return false;
 }
 
 
-if(digits.length>7){
+const somenteNumeros =
+numero.replace(/\D/g,'');
 
-formatted+=digits.substring(2,7)
-+'-'+digits.substring(7);
 
-}else{
-
-formatted+=digits.substring(2);
+return somenteNumeros.length === 11;
 
 }
+  
+  
+  
+  
+  // MÁSCARA TELEFONE
+  
+  whatsappInput.addEventListener('input', function(){
+  
+      let valor = this.value.replace(/\D/g,'');
+  
+  
+      valor = valor.substring(0,11);
+  
+  
+  
+      if(valor.length >= 7){
+  
+          this.value =
+          '(' +
+          valor.substring(0,2) +
+          ') ' +
+          valor.substring(2,7) +
+          '-' +
+          valor.substring(7);
+  
+      }
+  
+      else if(valor.length >=3){
+  
+          this.value =
+          '(' +
+          valor.substring(0,2) +
+          ') ' +
+          valor.substring(2);
+  
+      }
+  
+      else{
+  
+          this.value = valor;
+  
+      }
+  
+  
+  });
+
+  // REMOVE ERROS AO CORRIGIR O CAMPO
+
+[nomeInput,emailInput,whatsappInput].forEach((campo)=>{
 
 
-return formatted;
-
-}
+campo.addEventListener('input',()=>{
 
 
+clearError(campo.id);
 
-whatsappInput.addEventListener('input',(e)=>{
 
-e.target.value=maskWhatsapp(e.target.value);
+feedback.innerHTML='';
+
 
 });
 
 
+});
+  
+  
+  
+  
+  
+  // ENVIO FORMULÁRIO
+  
+  form.addEventListener('submit', async function(e){
+  
+  
+  e.preventDefault();
+  
+  
+  
+  feedback.innerHTML='';
+  
+  
+  
+  clearError('nome');
+  clearError('email');
+  clearError('whatsapp');
+  
+  
+  
+  const nome =
+  nomeInput.value.trim();
+  
+  
+  const email =
+  emailInput.value.trim();
+  
+  
+  const whatsapp =
+  whatsappInput.value.trim();
+  
+  
+  
+  let erro = false;
+  
+  
+  
+  // NOME
+  
+  if(!validarNome(nome)){
+  
+  
+  showError(
+  'nome',
+  'Nome deve ter pelo menos dois caracteres.'
+  );
+  
+  
+  erro=true;
+  
+  }
+  
+  
+  
+  
+  // EMAIL
+  
+  if(!validarEmail(email)){
+  
+  
+  showError(
+  'email',
+  'E-mail deve seguir o formato email@provedor.extensão.'
+  );
+  
+  
+  erro=true;
+  
+  }
+  
+  
+  
+  
+  
+  // WHATSAPP
+  
+  if(!validarWhatsapp(whatsapp)){
+  
+  
+  showError(
+  'whatsapp',
+  'Telefone deve ter o formato (xx) xxxxx-xxxx.'
+  );
+  
+  
+  erro=true;
+  
+  }
+  
+  
+  
+  
+  
+  // BLOQUEIA ENVIO
+  
+  if(erro){
+  
+      feedback.innerHTML =
+      'Corrija os campos destacados antes de enviar.';
+  
+      feedback.classList.add('feedback-error');
+  
+      return;
+  
+  }
+  
+  
+  
+  
+  
+  submitBtn.disabled=true;
+  
+  submitBtn.innerHTML='Enviando...';
+  
+  
+  
+  
+  
+  try{
+  
+  
+  const {error}=await supabase
+  
+  .from('Leads')
 
-
-
-form.addEventListener('submit',async(e)=>{
-
-
-e.preventDefault();
-
-
-
-const nome=nomeInput.value.trim();
-
-const email=emailInput.value.trim();
-
-const whatsapp=whatsappInput.value.trim();
-
-
-
-if(nome.length<2){
-
-showError('nome','Informe seu nome.');
-
-return;
-
-}
-
-
-
-if(!email.includes('@')){
-
-showError('email','Informe um e-mail válido.');
-
-return;
-
-}
-
-
-
-try{
-
-
-submitBtn.disabled=true;
-
-submitBtn.textContent='Enviando...';
-
-
-
-const {data,error}=await supabase
-
-.from('Leads')
-
-.insert([
-
-{
+.insert([{
 
 Nome:nome,
 
@@ -1043,67 +1198,73 @@ Nome:nome,
 
 Whatsapp:whatsapp
 
-}
-
-])
-
-.select();
-
-
-
-console.log(data);
-
-console.log(error);
-
-
-
-if(error){
-
-throw error;
-
-}
-
-
-
-feedback.textContent=
-'Mensagem enviada com sucesso!';
-
-feedback.classList.add('feedback-success');
-
-form.reset();
-
-
-
-}catch(error){
-
-
-console.error(error);
-
-
-feedback.textContent=
-'Erro ao enviar: '+error.message;
-
-
-feedback.classList.add('feedback-error');
-
-
-
-}finally{
-
-
-submitBtn.disabled=false;
-
-submitBtn.textContent='Enviar';
-
-
-}
-
-
-
-});
-
-
-</script>
+}]);
+  
+  
+  
+  
+  
+  if(error){
+  
+  throw error;
+  
+  }
+  
+  
+  
+  
+  
+  feedback.innerHTML =
+  'Mensagem enviada com sucesso! Entraremos em contato em breve.';
+  
+  
+  feedback.classList.remove('feedback-error');
+  
+  feedback.classList.add('feedback-success');
+  
+  
+  
+  form.reset();
+  
+  
+  
+  }
+  
+  catch(error){
+  
+  
+  console.error(error);
+  
+  
+  
+  feedback.innerHTML =
+  'Erro ao enviar os dados: ' + error.message;
+  
+  
+  feedback.classList.add('feedback-error');
+  
+  
+  }
+  
+  
+  
+  finally{
+  
+  
+  submitBtn.disabled=false;
+  
+  submitBtn.innerHTML='Enviar';
+  
+  
+  }
+  
+  
+  
+  });
+  
+  
+  
+  </script>
 
 
 </body>
